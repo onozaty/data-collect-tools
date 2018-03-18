@@ -1,5 +1,6 @@
 package com.enjoyxstudy.filesearch;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,8 +29,7 @@ public class GoogleSearcher {
             // (検索ボタンが隠れると押せなくなるので)
             inputElement.sendKeys(Keys.chord(Keys.ESCAPE));
 
-            WebElement buttonElement = driver.findElement(By.cssSelector("input[name=btnK]"));
-            buttonElement.click();
+            driver.findElement(By.cssSelector("input[name=btnK]")).click();
 
             resultUrls.addAll(collectResultUrls(driver));
 
@@ -44,6 +44,13 @@ public class GoogleSearcher {
         } finally {
             driver.quit();
         }
+    }
+
+    public List<DownloadResult> download(String query, Path outputDirectoryPath) {
+
+        List<String> resultUrls = search(query);
+
+        return new Downloader().download(resultUrls, outputDirectoryPath);
     }
 
     private List<String> collectResultUrls(WebDriver driver) {
