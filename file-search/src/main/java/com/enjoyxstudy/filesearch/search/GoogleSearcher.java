@@ -1,4 +1,4 @@
-package com.enjoyxstudy.filesearch;
+package com.enjoyxstudy.filesearch.search;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -10,6 +10,9 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+
+import com.enjoyxstudy.filesearch.download.DownloadResult;
+import com.enjoyxstudy.filesearch.download.Downloader;
 
 public class GoogleSearcher {
 

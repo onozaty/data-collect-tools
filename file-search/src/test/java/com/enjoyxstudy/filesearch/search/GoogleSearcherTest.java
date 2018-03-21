@@ -1,4 +1,4 @@
-package com.enjoyxstudy.filesearch;
+package com.enjoyxstudy.filesearch.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -9,6 +9,9 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+
+import com.enjoyxstudy.filesearch.download.DownloadResult;
+import com.enjoyxstudy.filesearch.search.GoogleSearcher;
 
 public class GoogleSearcherTest {
 

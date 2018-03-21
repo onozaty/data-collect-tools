@@ -1,4 +1,4 @@
-package com.enjoyxstudy.filesearch;
+package com.enjoyxstudy.filesearch.download;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,9 +26,9 @@ public class DownloaderTest {
                             "https://www.google.co.jp/",
                             "https://www.yahoo.co.jp/"),
                     tempDirectoryPath);
-            
+
             assertThat(results)
-                .hasSize(2);
+                    .hasSize(2);
 
         } finally {
             FileUtils.deleteDirectory(tempDirectoryPath.toFile());

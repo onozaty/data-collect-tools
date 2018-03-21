@@ -1,4 +1,4 @@
-package com.enjoyxstudy.filesearch;
+package com.enjoyxstudy.filesearch.download;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
