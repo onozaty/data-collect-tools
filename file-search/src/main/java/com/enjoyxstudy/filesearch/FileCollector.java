@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
@@ -21,8 +22,8 @@ public class FileCollector {
 
     public static void main(String[] args) throws IOException {
 
-        String query = args[0];
-        Path outputBaseDirectoryPath = Paths.get(args[1]);
+        Path outputBaseDirectoryPath = Paths.get(args[0]);
+        List<String> queries = Arrays.asList(Arrays.copyOfRange(args, 1, args.length));
 
         if (System.getProperty("webdriver.chrome.driver") == null) {
             System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
@@ -31,7 +32,7 @@ public class FileCollector {
         Path fileOutputDirectoryPath = outputBaseDirectoryPath.resolve("files");
         Path resultFilePath = outputBaseDirectoryPath.resolve("file-result.csv");
 
-        List<DownloadResult> downloadResults = new FileCollector().collect(query, fileOutputDirectoryPath);
+        List<DownloadResult> downloadResults = new FileCollector().collect(queries, fileOutputDirectoryPath);
 
         try (BufferedWriter writer = Files.newBufferedWriter(resultFilePath);
                 CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.EXCEL);) {
@@ -48,11 +49,11 @@ public class FileCollector {
         }
     }
 
-    public List<DownloadResult> collect(String query, Path outputDirectoryPath) {
+    public List<DownloadResult> collect(List<String> queries, Path outputDirectoryPath) {
 
-        log.info("検索クエリ: " + query);
+        log.info("検索クエリ: " + queries);
 
-        List<String> urls = new GoogleSearcher().search(query);
+        List<String> urls = new GoogleSearcher().search(queries);
         log.info("検索結果件数: " + urls.size());
 
         List<DownloadResult> downloadResults = new Downloader().download(urls, outputDirectoryPath);

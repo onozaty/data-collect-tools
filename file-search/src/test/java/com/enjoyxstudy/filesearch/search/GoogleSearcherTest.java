@@ -27,6 +27,19 @@ public class GoogleSearcherTest {
     }
 
     @Test
+    public void search_複数クエリ() {
+
+        System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
+
+        List<String> results = new GoogleSearcher().search(
+                "filetype:pdf lombok java テスト",
+                "filetype:pdf lombok java デバッグ");
+
+        assertThat(results)
+                .isNotEmpty();
+    }
+
+    @Test
     public void download() throws IOException {
 
         System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");

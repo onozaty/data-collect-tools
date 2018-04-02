@@ -2,5 +2,5 @@
 
 ```
 gradlew shadowJar
-java -jar build/libs/file-search-all.jar "filetype:pdf test" output
+java -jar build/libs/file-search-all.jar output "filetype:pdf test1" "filetype:pdf test2" 
 ```
