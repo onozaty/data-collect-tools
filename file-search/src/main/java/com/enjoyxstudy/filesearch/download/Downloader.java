@@ -1,7 +1,6 @@
 package com.enjoyxstudy.filesearch.download;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,21 +29,22 @@ public class Downloader {
     private Path createOutputFilePath(String url, int sequence, Path outputDirectoryPath) {
 
         // TODO: 本来ならば、レスポンスのContent-Dispositionなどからファイル名を取得し、それを利用した方が良い
-        
+
         // URL内のファイル名部分を取り出し
-        String urlFileName;
         try {
             // クエリパラメータ部分を除外して、最後の"/"以降を取り出し
             String path = new URL(url).getPath();
             int lastSeparatorIndex = path.lastIndexOf("/");
-            urlFileName = path.substring(lastSeparatorIndex + 1);
-        } catch (MalformedURLException e) {
-            urlFileName = "";
-        }
+            String urlFileName = path.substring(lastSeparatorIndex + 1);
 
-        // 出力ディレクトリ + 通番_URLのファイル名
-        return outputDirectoryPath.resolve(
-                String.format("%d_%s", sequence, urlFileName));
+            // 出力ディレクトリ + 通番_URLのファイル名
+            return outputDirectoryPath.resolve(
+                    String.format("%d_%s", sequence, urlFileName));
+
+        } catch (Exception e) {
+            // ファイル名作成に失敗した場合、通番のみのファイル名へ
+            return outputDirectoryPath.resolve(String.valueOf(sequence));
+        }
     }
 
     private DownloadResult download(String url, Path outputFilePath) {
@@ -58,7 +58,7 @@ public class Downloader {
                 // ダウンロード途中のファイルが残っている場合を考慮して削除
                 Files.deleteIfExists(outputFilePath);
             } catch (IOException e1) {
-                e.addSuppressed(e);
+                e.addSuppressed(e1);
             }
 
             return DownloadResult.failure(url, e);
