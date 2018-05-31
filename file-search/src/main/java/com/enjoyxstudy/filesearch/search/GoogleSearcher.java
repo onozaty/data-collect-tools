@@ -67,8 +67,8 @@ public class GoogleSearcher {
             // ロボット確認のURLになった場合は、画面入力を待ち合わせる
             Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 
-            if (System.currentTimeMillis() - startTime > TimeUnit.MINUTES.toMillis(2)) {
-                // 2分以上たってもそのままの場合はエラー
+            if (System.currentTimeMillis() - startTime > TimeUnit.MINUTES.toMillis(5)) {
+                // 5分以上たってもそのままの場合はエラー
                 throw new IllegalStateException();
             }
         }
