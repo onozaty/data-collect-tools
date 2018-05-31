@@ -2,9 +2,11 @@ package com.enjoyxstudy.filesearch.download;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -26,6 +28,8 @@ public class Downloader {
                 .collect(Collectors.toList());
     }
 
+    private static final int OUTPUT_FILE_NAME_LIMIT = 40;
+
     private Path createOutputFilePath(String url, int sequence, Path outputDirectoryPath) {
 
         // TODO: 本来ならば、レスポンスのContent-Dispositionなどからファイル名を取得し、それを利用した方が良い
@@ -35,7 +39,13 @@ public class Downloader {
             // クエリパラメータ部分を除外して、最後の"/"以降を取り出し
             String path = new URL(url).getPath();
             int lastSeparatorIndex = path.lastIndexOf("/");
-            String urlFileName = path.substring(lastSeparatorIndex + 1);
+            String urlFileName = URLDecoder.decode(path.substring(lastSeparatorIndex + 1), "UTF-8");
+
+            // 長すぎるファイル名となった場合には短縮
+            if (urlFileName.length() > OUTPUT_FILE_NAME_LIMIT) {
+                // 拡張子は残したいので、先頭部分を消す
+                urlFileName = urlFileName.substring(urlFileName.length() - OUTPUT_FILE_NAME_LIMIT);
+            }
 
             // 出力ディレクトリ + 通番_URLのファイル名
             return outputDirectoryPath.resolve(
@@ -47,10 +57,12 @@ public class Downloader {
         }
     }
 
+    private final static int TIMEOUT = (int) TimeUnit.MINUTES.toMillis(5);
+
     private DownloadResult download(String url, Path outputFilePath) {
 
         try {
-            FileUtils.copyURLToFile(new URL(url), outputFilePath.toFile());
+            FileUtils.copyURLToFile(new URL(url), outputFilePath.toFile(), TIMEOUT, TIMEOUT);
             return DownloadResult.success(url, outputFilePath);
 
         } catch (IOException e) {

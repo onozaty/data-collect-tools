@@ -23,7 +23,8 @@ public class DownloaderTest {
             Downloader downloader = new Downloader();
             List<DownloadResult> results = downloader.download(
                     Arrays.asList(
-                            "https://www.toshiba.co.jp/tech/review/2014/08/69_08pdf/a08.pdf"),
+                            "https://www.toshiba.co.jp/tech/review/2014/08/69_08pdf/a08.pdf",
+                            "https://google.com"),
                     tempDirectoryPath);
 
             assertThat(results)
