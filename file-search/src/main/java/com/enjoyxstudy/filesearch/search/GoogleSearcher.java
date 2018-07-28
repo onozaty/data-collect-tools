@@ -1,8 +1,6 @@
 package com.enjoyxstudy.filesearch.search;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -11,43 +9,13 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-
-import com.enjoyxstudy.filesearch.download.DownloadResult;
-import com.enjoyxstudy.filesearch.download.Downloader;
 
 import lombok.SneakyThrows;
 
-public class GoogleSearcher {
+public class GoogleSearcher implements Searcher {
 
-    @SneakyThrows(InterruptedException.class)
-    public List<String> search(List<String> queries) {
-
-        WebDriver driver = new ChromeDriver();
-
-        try {
-            List<String> resultUrls = new ArrayList<>();
-
-            for (String query : queries) {
-                resultUrls.addAll(search(driver, query));
-            }
-
-            // 複数クエリの場合、重複するURLが存在する可能性があるため
-            return resultUrls.stream()
-                        .distinct()
-                        .collect(Collectors.toList());
-
-        } finally {
-            driver.quit();
-        }
-    }
-
-    public List<String> search(String... queries) {
-
-        return search(Arrays.asList(queries));
-    }
-
-    private List<String> search(WebDriver driver, String query) throws InterruptedException {
+    @SneakyThrows
+    public List<String> search(WebDriver driver, String query) {
 
         List<String> resultUrls = new ArrayList<>();
 
@@ -83,13 +51,6 @@ public class GoogleSearcher {
         }
 
         return resultUrls;
-    }
-
-    public List<DownloadResult> download(String query, Path outputDirectoryPath) {
-
-        List<String> resultUrls = search(query);
-
-        return new Downloader().download(resultUrls, outputDirectoryPath);
     }
 
     private List<String> collectResultUrls(WebDriver driver) {
