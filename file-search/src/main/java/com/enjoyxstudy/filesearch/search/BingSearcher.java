@@ -9,9 +9,13 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class BingSearcher implements Searcher {
+
+    @Getter
+    private final String name = "Bing";
 
     @SneakyThrows
     public List<String> search(WebDriver driver, String query) {
@@ -38,7 +42,7 @@ public class BingSearcher implements Searcher {
             driver.findElement(By.cssSelector("a.sb_pagN")).click();
 
             // ページ番号取得
-            int currentPageNo = Integer.valueOf(driver.findElement(By.cssSelector("a.sb_pagS")).getText());
+            int currentPageNo = getCurrnetPageNo(driver);
             if (currentPageNo <= lastPageNo) {
                 // 前回のページ番号以下の場合は終了
                 // (次ページを押していくとページが戻る場合があるため)
@@ -50,6 +54,15 @@ public class BingSearcher implements Searcher {
         }
 
         return resultUrls;
+    }
+
+    private int getCurrnetPageNo(WebDriver driver) {
+
+        if (driver.findElements(By.cssSelector("a.sb_pagS")).isEmpty()) {
+            return 0;
+        }
+
+        return Integer.valueOf(driver.findElement(By.cssSelector("a.sb_pagS")).getText());
     }
 
     private List<String> collectResultUrls(WebDriver driver) {

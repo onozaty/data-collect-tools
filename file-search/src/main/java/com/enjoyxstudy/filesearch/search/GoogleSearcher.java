@@ -10,9 +10,13 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 
 public class GoogleSearcher implements Searcher {
+
+    @Getter
+    private final String name = "Google";
 
     @SneakyThrows
     public List<String> search(WebDriver driver, String query) {

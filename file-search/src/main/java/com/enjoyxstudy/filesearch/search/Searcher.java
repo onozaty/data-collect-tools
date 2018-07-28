@@ -40,12 +40,14 @@ public interface Searcher {
         return search(Arrays.asList(queries));
     }
 
-    List<String> search(WebDriver driver, String query);
-
     public default List<DownloadResult> download(String query, Path outputDirectoryPath) {
 
         List<String> resultUrls = search(query);
 
         return new Downloader().download(resultUrls, outputDirectoryPath);
     }
+    
+    List<String> search(WebDriver driver, String query);
+
+    String getName(); 
 }
