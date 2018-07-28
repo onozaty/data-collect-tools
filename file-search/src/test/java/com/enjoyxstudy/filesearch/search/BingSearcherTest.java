@@ -12,16 +12,16 @@ import org.junit.Test;
 
 import com.enjoyxstudy.filesearch.download.DownloadResult;
 
-public class GoogleSearcherTest {
+public class BingSearcherTest {
 
-    private Searcher targetSeacher = new GoogleSearcher();
+    private Searcher targetSeacher = new BingSearcher();
 
     @Test
     public void search() {
 
         System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
 
-        List<String> results = targetSeacher.search("filetype:pdf lombok java テスト");
+        List<String> results = targetSeacher.search("filetype:pdf テスト selenium java");
 
         assertThat(results)
                 .isNotEmpty();
@@ -33,8 +33,8 @@ public class GoogleSearcherTest {
         System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
 
         List<String> results = targetSeacher.search(
-                "filetype:pdf lombok java テスト",
-                "filetype:pdf lombok java デバッグ");
+                "filetype:pdf テスト selenium java",
+                "filetype:pdf lombok java コード");
 
         assertThat(results)
                 .isNotEmpty();
@@ -50,7 +50,7 @@ public class GoogleSearcherTest {
         try {
 
             List<DownloadResult> results = targetSeacher.download(
-                    "filetype:pdf lombok java テスト test", tempDirectoryPath);
+                    "filetype:pdf lombok java コード", tempDirectoryPath);
 
             assertThat(results)
                     .isNotEmpty()
