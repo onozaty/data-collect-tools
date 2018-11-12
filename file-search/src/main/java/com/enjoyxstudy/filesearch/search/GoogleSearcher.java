@@ -59,7 +59,7 @@ public class GoogleSearcher implements Searcher {
 
     private List<String> collectResultUrls(WebDriver driver) {
 
-        return driver.findElements(By.xpath("//h3[@class=\"r\"]/a")).stream()
+        return driver.findElements(By.xpath("//div[@class=\"r\"]/a")).stream()
                 .map(x -> x.getAttribute("href"))
                 .collect(Collectors.toList());
     }
