@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -27,7 +26,7 @@ public class GoogleSearcher implements Searcher {
 
         WebElement inputElement = driver.findElement(By.cssSelector("input[name=q]"));
         inputElement.sendKeys(query);
-        inputElement.sendKeys(Keys.chord(Keys.ENTER));
+        inputElement.submit();
 
         long startTime = System.currentTimeMillis();
         while (isRobotUrl(driver.getCurrentUrl())) {

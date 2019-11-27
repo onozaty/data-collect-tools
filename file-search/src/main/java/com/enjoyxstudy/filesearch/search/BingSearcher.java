@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -26,12 +27,10 @@ public class BingSearcher implements Searcher {
 
         WebElement inputElement = driver.findElement(By.cssSelector("#sb_form_q"));
         inputElement.sendKeys(query);
+        inputElement.submit();
 
-        // 補完が出てくる場合があるので、ESCキーで非表示へ
-        // (検索ボタンが隠れると押せなくなるので)
-        inputElement.sendKeys(Keys.chord(Keys.ESCAPE));
-
-        driver.findElement(By.cssSelector("#sb_form_go")).click();
+        new WebDriverWait(driver, 10)
+                .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#b_results")));
 
         resultUrls.addAll(collectResultUrls(driver));
         int lastPageNo = 1;
@@ -40,6 +39,8 @@ public class BingSearcher implements Searcher {
         while (!driver.findElements(By.cssSelector("a.sb_pagN")).isEmpty()) {
 
             driver.findElement(By.cssSelector("a.sb_pagN")).click();
+            new WebDriverWait(driver, 10)
+                    .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#b_results")));
 
             // ページ番号取得
             int currentPageNo = getCurrnetPageNo(driver);
