@@ -27,12 +27,7 @@ public class GoogleSearcher implements Searcher {
 
         WebElement inputElement = driver.findElement(By.cssSelector("input[name=q]"));
         inputElement.sendKeys(query);
-
-        // 補完が出てくる場合があるので、ESCキーで非表示へ
-        // (検索ボタンが隠れると押せなくなるので)
-        inputElement.sendKeys(Keys.chord(Keys.ESCAPE));
-
-        driver.findElement(By.cssSelector("input[name=btnK]")).click();
+        inputElement.sendKeys(Keys.chord(Keys.ENTER));
 
         long startTime = System.currentTimeMillis();
         while (isRobotUrl(driver.getCurrentUrl())) {
