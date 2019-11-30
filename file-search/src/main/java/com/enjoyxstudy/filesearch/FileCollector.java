@@ -2,10 +2,12 @@ package com.enjoyxstudy.filesearch;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -56,9 +58,6 @@ public class FileCollector {
         Path outputBaseDirectoryPath = Paths.get(line.getOptionValue("o"));
         List<String> queries = line.getArgList();
 
-        Path fileOutputDirectoryPath = outputBaseDirectoryPath.resolve("files");
-        Path resultFilePath = outputBaseDirectoryPath.resolve("file-result.csv");
-
         Searcher searcher;
         String engineName = line.getOptionValue("e");
         if (engineName == null || engineName.equalsIgnoreCase("google")) {
@@ -69,10 +68,42 @@ public class FileCollector {
             throw new InvalidArgumentException(engineName + " は対応していない検索エンジンです。 ");
         }
 
-        List<DownloadResult> downloadResults = new FileCollector().collect(searcher, queries, fileOutputDirectoryPath);
+        new FileCollector().collect(searcher, queries, outputBaseDirectoryPath);
+    }
 
-        try (BufferedWriter writer = Files.newBufferedWriter(resultFilePath);
+    public void collect(Searcher searcher, List<String> queries, Path outputDirectoryPath)
+            throws IOException {
+
+        if (Files.notExists(outputDirectoryPath)) {
+            Files.createDirectories(outputDirectoryPath);
+        }
+
+        log.info("検索エンジン: " + searcher.getName());
+        log.info("検索クエリ: " + queries);
+
+        List<String> urls = searcher.search(queries).stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        log.info("検索結果件数: " + urls.size());
+
+        Files.write(
+                outputDirectoryPath.resolve("urls.txt"),
+                urls.stream()
+                        .collect(Collectors.joining("\n"))
+                        .getBytes(StandardCharsets.UTF_8));
+
+        List<DownloadResult> downloadResults = new Downloader().download(
+                urls, outputDirectoryPath.resolve("files"));
+
+        log.info("ダウンロード件数: " + downloadResults.stream().filter(DownloadResult::isSuccess).count());
+
+        try (BufferedWriter writer = Files.newBufferedWriter(
+                outputDirectoryPath.resolve("download-result.csv"), StandardCharsets.UTF_8);
                 CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.EXCEL);) {
+
+            writer.write('\uFEFF'); // BOM
 
             csvPrinter.printRecord("URL", "FILE");
 
@@ -84,20 +115,5 @@ public class FileCollector {
                                 : null);
             }
         }
-    }
-
-    public List<DownloadResult> collect(Searcher searcher, List<String> queries, Path outputDirectoryPath)
-            throws IOException {
-
-        log.info("検索エンジン: " + searcher.getName());
-        log.info("検索クエリ: " + queries);
-
-        List<String> urls = searcher.search(queries);
-        log.info("検索結果件数: " + urls.size());
-
-        List<DownloadResult> downloadResults = new Downloader().download(urls, outputDirectoryPath);
-        log.info("ダウンロード件数: " + downloadResults.stream().filter(DownloadResult::isSuccess).count());
-
-        return downloadResults;
     }
 }
