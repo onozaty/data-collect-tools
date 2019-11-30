@@ -31,6 +31,7 @@ public class BingSearcher implements Searcher {
         inputElement.submit();
         if (startUrl.equals(driver.getCurrentUrl())) {
             // submitが空振りする時があるので
+            Thread.sleep(1000);
             inputElement.submit();
         }
 
