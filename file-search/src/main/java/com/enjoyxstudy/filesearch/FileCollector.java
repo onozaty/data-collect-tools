@@ -86,7 +86,8 @@ public class FileCollector {
         }
     }
 
-    public List<DownloadResult> collect(Searcher searcher, List<String> queries, Path outputDirectoryPath) {
+    public List<DownloadResult> collect(Searcher searcher, List<String> queries, Path outputDirectoryPath)
+            throws IOException {
 
         log.info("検索エンジン: " + searcher.getName());
         log.info("検索クエリ: " + queries);

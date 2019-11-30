@@ -17,6 +17,7 @@ dependencies {
 
     compile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile group: 'org.apache.commons', name: 'commons-csv', version: '1.5'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.16.20'

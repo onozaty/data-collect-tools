@@ -1,5 +1,6 @@
 package com.enjoyxstudy.filesearch.search;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,14 +41,14 @@ public interface Searcher {
         return search(Arrays.asList(queries));
     }
 
-    public default List<DownloadResult> download(String query, Path outputDirectoryPath) {
+    public default List<DownloadResult> download(String query, Path outputDirectoryPath) throws IOException {
 
         List<String> resultUrls = search(query);
 
         return new Downloader().download(resultUrls, outputDirectoryPath);
     }
-    
+
     List<String> search(WebDriver driver, String query);
 
-    String getName(); 
+    String getName();
 }
