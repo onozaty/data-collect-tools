@@ -24,10 +24,15 @@ public class BingSearcher implements Searcher {
         List<String> resultUrls = new ArrayList<>();
 
         driver.get("https://www.bing.com/?FORM=&setmkt=en-us&setlang=en-us");
+        String startUrl = driver.getCurrentUrl();
 
         WebElement inputElement = driver.findElement(By.cssSelector("#sb_form_q"));
         inputElement.sendKeys(query);
         inputElement.submit();
+        if (startUrl.equals(driver.getCurrentUrl())) {
+            // submitが空振りする時があるので
+            inputElement.submit();
+        }
 
         new WebDriverWait(driver, 10)
                 .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#b_results")));
@@ -68,7 +73,7 @@ public class BingSearcher implements Searcher {
 
     private List<String> collectResultUrls(WebDriver driver) {
 
-        return driver.findElements(By.cssSelector(".b_algo a")).stream()
+        return driver.findElements(By.cssSelector(".b_algo .b_title a")).stream()
                 .map(x -> x.getAttribute("href"))
                 .collect(Collectors.toList());
     }
