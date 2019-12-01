@@ -14,7 +14,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.james.mime4j.codec.DecodeMonitor;
+import org.apache.james.mime4j.codec.DecoderUtil;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -86,6 +89,8 @@ public class Downloader {
         }
     }
 
+    private static final Pattern INVALID_WINDOWS_FILENAME_CHARS_PATTERN = Pattern.compile("[\\/:\\*\\?\"<>|]");
+
     private Path createOutputFilePath(Response response, int sequence, Path outputDirectoryPath) {
 
         try {
@@ -93,6 +98,10 @@ public class Downloader {
             String filename = getFilenameByHeader(response);
             if (StringUtils.isEmpty(filename)) {
                 filename = getFilenameByUrl(response.request().url().toString());
+            }
+
+            if (!StringUtils.isEmpty(filename)) {
+                filename = INVALID_WINDOWS_FILENAME_CHARS_PATTERN.matcher(filename).replaceAll("");
             }
 
             if (StringUtils.isEmpty(filename)) {
@@ -119,6 +128,9 @@ public class Downloader {
     private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern
             .compile("filename[\\s]*=[\\s]*['\"]?([^'\";]+)['\";]?");
 
+    private static final Pattern CONTENT_DISPOSITION_FILENAME_WITH_ENCODING_PATTERN = Pattern
+            .compile("filename\\*[\\s]*=[\\s]*([^'']+)''([^'\";]+)");
+
     private String getFilenameByHeader(Response response) {
 
         String contentDisposition = response.header("Content-Disposition");
@@ -128,10 +140,35 @@ public class Downloader {
 
         Matcher matcher = CONTENT_DISPOSITION_FILENAME_PATTERN.matcher(contentDisposition);
         if (matcher.find()) {
+            String value = matcher.group(1);
             try {
-                return URLDecoder.decode(matcher.group(1), "UTF-8");
+                String filename;
+                try {
+                    filename = DecoderUtil.decodeEncodedWords(value, DecodeMonitor.STRICT);
+                } catch (Throwable e) { // DecoderUtil#decodeEncodedWordsがErrorを返すことがあるので
+                    filename = value;
+                }
+
+                try {
+                    return URLDecoder.decode(filename, "UTF-8");
+                } catch (Exception e) {
+                    return filename;
+                }
             } catch (Exception e) {
-                return null;
+                return value;
+            }
+        }
+
+        matcher = CONTENT_DISPOSITION_FILENAME_WITH_ENCODING_PATTERN.matcher(contentDisposition);
+        if (matcher.find()) {
+            String encoding = matcher.group(1);
+            String value = matcher.group(2);
+
+            try {
+                return new URLCodec(encoding).decode(value);
+            } catch (Exception e) {
+                // おかしなエンコーディングの場合、デコード前の文字を返却
+                return value;
             }
         }
 
