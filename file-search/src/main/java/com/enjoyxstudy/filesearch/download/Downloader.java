@@ -117,7 +117,7 @@ public class Downloader {
     }
 
     private static final Pattern CONTENT_DISPOSITION_FILENAME_PATTERN = Pattern
-            .compile("filename=['\"]?([^'\"]+)['\"]?");
+            .compile("filename[\\s]*=[\\s]*['\"]?([^'\";]+)['\";]?");
 
     private String getFilenameByHeader(Response response) {
 
