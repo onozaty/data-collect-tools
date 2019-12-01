@@ -177,12 +177,19 @@ public class Downloader {
 
     private String getFilenameByUrl(String url) throws MalformedURLException {
 
-        // クエリパラメータ部分を除外して、最後の"/"以降を取り出し
-        String path = new URL(url).getPath();
-        int lastSeparatorIndex = path.lastIndexOf("/");
-
         try {
-            return URLDecoder.decode(path.substring(lastSeparatorIndex + 1), "UTF-8");
+
+            // クエリパラメータ部分を除外して、最後の"/"以降を取り出し
+            String path = new URL(url).getPath();
+            int lastSeparatorIndex = path.lastIndexOf("/");
+
+            String filename = path.substring(lastSeparatorIndex + 1);
+            int semicolonIndex = filename.lastIndexOf(";");
+            if (semicolonIndex != -1) {
+                filename = filename.substring(0, semicolonIndex);
+            }
+
+            return URLDecoder.decode(filename, "UTF-8");
         } catch (Exception e) {
             return null;
         }
