@@ -53,6 +53,13 @@ public class FileCollector {
                         .argName("engine")
                         .build());
 
+        options.addOption(
+                Option.builder("u")
+                        .desc("URLs")
+                        .hasArg()
+                        .argName("urls")
+                        .build());
+
         CommandLine line = parser.parse(options, args);
 
         Path outputBaseDirectoryPath = Paths.get(line.getOptionValue("o"));
@@ -68,23 +75,34 @@ public class FileCollector {
             throw new InvalidArgumentException(engineName + " は対応していない検索エンジンです。 ");
         }
 
-        new FileCollector().collect(searcher, queries, outputBaseDirectoryPath);
+        List<String> urls = null;
+        if (line.hasOption("u")) {
+            urls = Files.lines(Paths.get(line.getOptionValue("u")), StandardCharsets.UTF_8)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+
+        new FileCollector().collect(searcher, queries, urls, outputBaseDirectoryPath);
     }
 
-    public void collect(Searcher searcher, List<String> queries, Path outputDirectoryPath)
+    public void collect(Searcher searcher, List<String> queries, List<String> urls, Path outputDirectoryPath)
             throws IOException {
 
         if (Files.notExists(outputDirectoryPath)) {
             Files.createDirectories(outputDirectoryPath);
         }
 
-        log.info("検索エンジン: " + searcher.getName());
-        log.info("検索クエリ: " + queries);
+        if (urls == null) {
 
-        List<String> urls = searcher.search(queries).stream()
-                .distinct()
-                .sorted()
-                .collect(Collectors.toList());
+            log.info("検索エンジン: " + searcher.getName());
+            log.info("検索クエリ: " + queries);
+
+            urls = searcher.search(queries).stream()
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
 
         log.info("検索結果件数: " + urls.size());
 
