@@ -13,7 +13,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-public class BingSearcher implements Searcher {
+public class BingSearcher extends Searcher {
+
+    public BingSearcher(boolean headless) {
+        super(headless);
+    }
 
     @Getter
     private final String name = "Bing";

@@ -9,21 +9,44 @@ import java.util.stream.Collectors;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import com.enjoyxstudy.filesearch.download.DownloadResult;
 import com.enjoyxstudy.filesearch.download.Downloader;
 
-public interface Searcher {
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
-    public default List<String> search(List<String> queries) {
+@Slf4j
+public abstract class Searcher {
 
-        WebDriver driver = new ChromeDriver();
+    @Getter
+    private final boolean headless;
+
+    public Searcher(boolean headless) {
+        this.headless = headless;
+    }
+
+    public List<String> search(List<String> queries) {
+
+        ChromeOptions options = new ChromeOptions().setHeadless(headless);
+        WebDriver driver = new ChromeDriver(options);
 
         try {
             List<String> resultUrls = new ArrayList<>();
 
-            for (String query : queries) {
-                resultUrls.addAll(search(driver, query));
+            for (int i = 0; i < queries.size(); i++) {
+                String query = queries.get(i);
+
+                try {
+                    log.info("検索を開始します。 検索クエリ({}/{}): {}", i + 1, queries.size(), query);
+                    List<String> urls = search(driver, query);
+                    log.info("検索を終了しました。 件数: {}", urls.size());
+
+                    resultUrls.addAll(urls);
+                } catch (Exception e) {
+                    log.error("検索でエラーが発生しました。 ", e);
+                }
             }
 
             // 複数クエリの場合、重複するURLが存在する可能性があるため
@@ -36,19 +59,19 @@ public interface Searcher {
         }
     }
 
-    public default List<String> search(String... queries) {
+    public List<String> search(String... queries) {
 
         return search(Arrays.asList(queries));
     }
 
-    public default List<DownloadResult> download(String query, Path outputDirectoryPath) throws IOException {
+    public List<DownloadResult> download(String query, Path outputDirectoryPath) throws IOException {
 
         List<String> resultUrls = search(query);
 
         return new Downloader().download(resultUrls, outputDirectoryPath);
     }
 
-    List<String> search(WebDriver driver, String query);
+    protected abstract List<String> search(WebDriver driver, String query);
 
-    String getName();
+    public abstract String getName();
 }

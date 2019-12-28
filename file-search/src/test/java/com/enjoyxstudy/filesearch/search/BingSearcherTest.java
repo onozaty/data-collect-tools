@@ -14,7 +14,7 @@ import com.enjoyxstudy.filesearch.download.DownloadResult;
 
 public class BingSearcherTest {
 
-    private Searcher targetSeacher = new BingSearcher();
+    private Searcher targetSeacher = new BingSearcher(false);
 
     @Test
     public void search() {

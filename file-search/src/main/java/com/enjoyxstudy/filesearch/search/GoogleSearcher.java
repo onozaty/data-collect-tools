@@ -12,7 +12,11 @@ import org.openqa.selenium.WebElement;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-public class GoogleSearcher implements Searcher {
+public class GoogleSearcher extends Searcher {
+
+    public GoogleSearcher(boolean headless) {
+        super(headless);
+    }
 
     @Getter
     private final String name = "Google";

@@ -6,12 +6,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -41,52 +43,144 @@ public class FileCollector {
         Options options = new Options();
         options.addOption(
                 Option.builder("o")
-                        .desc("Output folder")
+                        .longOpt("output")
+                        .desc("output folder")
                         .hasArg()
-                        .argName("output")
+                        .argName("output folder")
                         .required()
                         .build());
         options.addOption(
                 Option.builder("e")
-                        .desc("Search engine (google or bing)")
+                        .longOpt("engine")
+                        .desc("search engine (google or bing)")
                         .hasArg()
-                        .argName("engine")
+                        .argName("engine name")
                         .build());
 
         options.addOption(
                 Option.builder("u")
-                        .desc("URLs")
+                        .longOpt("urls")
+                        .desc("urls file")
                         .hasArg()
-                        .argName("urls")
+                        .argName("urls file")
                         .build());
 
-        CommandLine line = parser.parse(options, args);
+        options.addOption(
+                Option.builder("sd")
+                        .longOpt("skipdownload")
+                        .desc("skip download")
+                        .build());
 
-        Path outputBaseDirectoryPath = Paths.get(line.getOptionValue("o"));
-        List<String> queries = line.getArgList();
+        options.addOption(
+                Option.builder("hl")
+                        .longOpt("headless")
+                        .desc("headless mode")
+                        .build());
 
-        Searcher searcher;
-        String engineName = line.getOptionValue("e");
-        if (engineName == null || engineName.equalsIgnoreCase("google")) {
-            searcher = new GoogleSearcher();
-        } else if (engineName.equalsIgnoreCase("bing")) {
-            searcher = new BingSearcher();
-        } else {
-            throw new InvalidArgumentException(engineName + " は対応していない検索エンジンです。 ");
+        options.addOption(
+                Option.builder("qct")
+                        .longOpt("qctype")
+                        .desc("file type used in combination of queries (example: xls, doc)")
+                        .hasArg()
+                        .argName("file type (use query combinations)")
+                        .build());
+
+        options.addOption(
+                Option.builder("qcf")
+                        .longOpt("qcfile")
+                        .desc("query combinations file")
+                        .hasArg()
+                        .argName("query combinations file")
+                        .build());
+
+        try {
+            CommandLine line = parser.parse(options, args);
+
+            Path outputBaseDirectoryPath = Paths.get(line.getOptionValue("o"));
+
+            List<String> queries;
+
+            if (line.hasOption("qct") && line.hasOption("qcf")) {
+                Path queriesPath = Paths.get(line.getOptionValue("qcf"));
+                // コンビネーションのクエリを生成
+                queries = createCombinationQueries(
+                        line.getOptionValue("qct"),
+                        Files.readAllLines(queriesPath, StandardCharsets.UTF_8));
+            } else {
+                queries = line.getArgList();
+            }
+
+            boolean headless = line.hasOption("hl");
+
+            Searcher searcher;
+            String engineName = line.getOptionValue("e");
+            if (engineName == null || engineName.equalsIgnoreCase("google")) {
+                searcher = new GoogleSearcher(headless);
+            } else if (engineName.equalsIgnoreCase("bing")) {
+                searcher = new BingSearcher(headless);
+            } else {
+                throw new InvalidArgumentException(engineName + " は対応していない検索エンジンです。 ");
+            }
+
+            List<String> urls = null;
+            if (line.hasOption("u")) {
+                urls = Files.lines(Paths.get(line.getOptionValue("u")), StandardCharsets.UTF_8)
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList());
+            }
+
+            boolean skipDownload = line.hasOption("sd");
+
+            new FileCollector().collect(
+                    searcher,
+                    queries,
+                    urls,
+                    skipDownload,
+                    outputBaseDirectoryPath);
+
+        } catch (ParseException e) {
+            System.out.println("Unexpected exception:" + e.getMessage());
+            System.out.println();
+
+            printUsage(options);
+            return;
         }
-
-        List<String> urls = null;
-        if (line.hasOption("u")) {
-            urls = Files.lines(Paths.get(line.getOptionValue("u")), StandardCharsets.UTF_8)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList());
-        }
-
-        new FileCollector().collect(searcher, queries, urls, outputBaseDirectoryPath);
     }
 
-    public void collect(Searcher searcher, List<String> queries, List<String> urls, Path outputDirectoryPath)
+    private static void printUsage(Options options) {
+        HelpFormatter help = new HelpFormatter();
+        help.setWidth(200);
+        help.setOptionComparator(null); // 順番を変えない
+
+        // ヘルプを出力
+        help.printHelp("java -jar file-search-all.jar", options, true);
+        System.exit(1);
+    }
+
+    private static List<String> createCombinationQueries(String fileType, List<String> words) {
+
+        String fileTypeQuery = "filetype:" + fileType;
+
+        List<String> queries = new ArrayList<>();
+
+        for (int i = 0; i < words.size(); i++) {
+            String word = words.get(i);
+
+            queries.add(String.join(" ", fileTypeQuery, word));
+
+            // 2つのワードの組み合わせを作成
+            for (int j = i + 1; j < words.size(); j++) {
+
+                queries.add(String.join(" ", fileTypeQuery, word, words.get(j)));
+            }
+        }
+
+        return queries;
+    }
+
+    public void collect(Searcher searcher, List<String> queries, List<String> urls, boolean skipDownload,
+            Path outputDirectoryPath)
             throws IOException {
 
         if (Files.notExists(outputDirectoryPath)) {
@@ -97,6 +191,7 @@ public class FileCollector {
 
             log.info("検索エンジン: " + searcher.getName());
             log.info("検索クエリ: " + queries);
+            log.info("ヘッドレスモード: " + searcher.isHeadless());
 
             urls = searcher.search(queries).stream()
                     .distinct()
@@ -108,9 +203,12 @@ public class FileCollector {
 
         Files.write(
                 outputDirectoryPath.resolve("urls.txt"),
-                urls.stream()
-                        .collect(Collectors.joining("\n"))
-                        .getBytes(StandardCharsets.UTF_8));
+                (urls.stream().collect(Collectors.joining("\n")) + "\n").getBytes(StandardCharsets.UTF_8));
+
+        if (skipDownload) {
+            log.info("ダウンロードをスキップしました。");
+            return;
+        }
 
         List<DownloadResult> downloadResults = new Downloader().download(
                 urls, outputDirectoryPath.resolve("files"));

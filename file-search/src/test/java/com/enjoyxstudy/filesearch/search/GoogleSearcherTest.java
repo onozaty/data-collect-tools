@@ -14,7 +14,7 @@ import com.enjoyxstudy.filesearch.download.DownloadResult;
 
 public class GoogleSearcherTest {
 
-    private Searcher targetSeacher = new GoogleSearcher();
+    private Searcher targetSeacher = new GoogleSearcher(false);
 
     @Test
     public void search() {
