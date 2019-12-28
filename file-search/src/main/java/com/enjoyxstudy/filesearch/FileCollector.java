@@ -187,7 +187,11 @@ public class FileCollector {
             Files.createDirectories(outputDirectoryPath);
         }
 
-        if (urls == null) {
+        if (urls != null) {
+
+            log.info("URL件数: " + urls.size());
+
+        } else {
 
             log.info("検索エンジン: " + searcher.getName());
             log.info("検索クエリ: " + queries);
@@ -197,9 +201,9 @@ public class FileCollector {
                     .distinct()
                     .sorted()
                     .collect(Collectors.toList());
-        }
 
-        log.info("検索結果件数: " + urls.size());
+            log.info("検索結果件数: " + urls.size());
+        }
 
         Files.write(
                 outputDirectoryPath.resolve("urls.txt"),
@@ -210,10 +214,13 @@ public class FileCollector {
             return;
         }
 
+        log.info("ダウンロードを開始しました。");
+
         List<DownloadResult> downloadResults = new Downloader().download(
                 urls, outputDirectoryPath.resolve("files"));
 
-        log.info("ダウンロード件数: " + downloadResults.stream().filter(DownloadResult::isSuccess).count());
+        log.info("ダウンロードが完了しました。 ダウンロード成功件数: "
+                + downloadResults.stream().filter(DownloadResult::isSuccess).count());
 
         try (BufferedWriter writer = Files.newBufferedWriter(
                 outputDirectoryPath.resolve("download-result.csv"), StandardCharsets.UTF_8);
