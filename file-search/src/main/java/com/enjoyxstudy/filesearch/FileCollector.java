@@ -66,6 +66,14 @@ public class FileCollector {
                         .build());
 
         options.addOption(
+                Option.builder("eu")
+                        .longOpt("excludeurls")
+                        .desc("exclude urls file")
+                        .hasArg()
+                        .argName("excludeurls file")
+                        .build());
+
+        options.addOption(
                 Option.builder("sd")
                         .longOpt("skipdownload")
                         .desc("skip download")
@@ -130,12 +138,21 @@ public class FileCollector {
                         .collect(Collectors.toList());
             }
 
+            List<String> excludeUrls = null;
+            if (line.hasOption("eu")) {
+                excludeUrls = Files.lines(Paths.get(line.getOptionValue("eu")), StandardCharsets.UTF_8)
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList());
+            }
+
             boolean skipDownload = line.hasOption("sd");
 
             new FileCollector().collect(
                     searcher,
                     queries,
                     urls,
+                    excludeUrls,
                     skipDownload,
                     outputBaseDirectoryPath);
 
@@ -179,8 +196,8 @@ public class FileCollector {
         return queries;
     }
 
-    public void collect(Searcher searcher, List<String> queries, List<String> urls, boolean skipDownload,
-            Path outputDirectoryPath)
+    public void collect(Searcher searcher, List<String> queries, List<String> urls, List<String> excludeUrls,
+            boolean skipDownload, Path outputDirectoryPath)
             throws IOException {
 
         if (Files.notExists(outputDirectoryPath)) {
@@ -203,6 +220,15 @@ public class FileCollector {
                     .collect(Collectors.toList());
 
             log.info("検索結果件数: " + urls.size());
+        }
+
+        if (excludeUrls != null) {
+
+            log.info("除外対象URL件数: " + excludeUrls.size());
+
+            urls.removeIf(excludeUrls::contains);
+
+            log.info("除外後URL件数: " + urls.size());
         }
 
         Files.write(
