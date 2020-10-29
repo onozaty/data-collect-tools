@@ -19,8 +19,6 @@ public class BingSearcherTest {
     @Test
     public void search() {
 
-        System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
-
         List<String> results = targetSeacher.search("filetype:pdf テスト selenium java");
 
         assertThat(results)
@@ -29,8 +27,6 @@ public class BingSearcherTest {
 
     @Test
     public void search_複数クエリ() {
-
-        System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
 
         List<String> results = targetSeacher.search(
                 "filetype:pdf テスト selenium java",
@@ -42,8 +38,6 @@ public class BingSearcherTest {
 
     @Test
     public void download() throws IOException {
-
-        System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
 
         Path tempDirectoryPath = Files.createTempDirectory(null);
 

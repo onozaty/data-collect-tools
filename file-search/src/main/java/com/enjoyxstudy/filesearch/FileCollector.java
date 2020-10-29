@@ -34,10 +34,6 @@ public class FileCollector {
 
     public static void main(String[] args) throws IOException, ParseException {
 
-        if (System.getProperty("webdriver.chrome.driver") == null) {
-            System.setProperty("webdriver.chrome.driver", "driver/chromedriver.exe");
-        }
-
         CommandLineParser parser = new DefaultParser();
 
         Options options = new Options();

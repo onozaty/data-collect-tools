@@ -14,6 +14,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import com.enjoyxstudy.filesearch.download.DownloadResult;
 import com.enjoyxstudy.filesearch.download.Downloader;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,6 +26,8 @@ public abstract class Searcher {
 
     public Searcher(boolean headless) {
         this.headless = headless;
+
+        WebDriverManager.chromedriver().setup();
     }
 
     public List<String> search(List<String> queries) {
